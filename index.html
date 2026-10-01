@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Espace Black Friday Darty</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wght@400;600;700&display=swap">
+<style>
+/* Layout : bandeau d'enseigne, puis réserve de produits à gauche et gondole à droite (empilés sur téléphone) */
+:root {
+  --bg: #f4f2f1;
+  --surface: #ffffff;
+  --ink: #1b1a1a;
+  --muted: #615b59;
+  --line: #d9d3d1;
+  --red: #e30613;
+  --red-soft: #fde6e7;
+  --black: #111111;
+  --on-dark: #ffffff;
+  --shelf: #8b8582;
+  --ok: #1d7a3a;
+  --ok-soft: #e3f3e8;
+  --ko: #c0111c;
+  --ko-soft: #fde6e7;
+  --slot: #faf8f7;
+  --display: "Archivo Black", "Arial Black", "Helvetica Neue", Arial, sans-serif;
+  --body: "Archivo", "Helvetica Neue", Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #161414; --surface: #211e1e; --ink: #f3efee; --muted: #b3aba8; --line: #3a3534;
+    --red: #ff3b45; --red-soft: #3a1416; --black: #000000; --on-dark: #ffffff; --shelf: #6e6866;
+    --ok: #4cc472; --ok-soft: #142b1c; --ko: #ff5a62; --ko-soft: #3a1416; --slot: #2a2626;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #161414; --surface: #211e1e; --ink: #f3efee; --muted: #b3aba8; --line: #3a3534;
+  --red: #ff3b45; --red-soft: #3a1416; --black: #000000; --on-dark: #ffffff; --shelf: #6e6866;
+  --ok: #4cc472; --ok-soft: #142b1c; --ko: #ff5a62; --ko-soft: #3a1416; --slot: #2a2626;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.45; margin: 0; }
+.wrap { max-width: 1180px; margin: 0 auto; padding-inline: 16px; padding-block: 0 40px; }
+
+header.brand { background: var(--black); color: var(--on-dark); }
+header.brand .wrap { padding-block: 18px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 20px; }
+.logo { background: var(--red); color: #fff; font-family: var(--display); font-size: 20px; padding: 6px 12px; letter-spacing: .02em; }
+header.brand h1 { font-family: var(--display); font-weight: 400; font-size: clamp(20px, 3.2vw, 30px); margin: 0; text-wrap: balance; }
+header.brand h1 span { color: var(--red); }
+header.brand p { margin: 0; flex-basis: 100%; color: #d6d0ce; font-size: 14px; }
+
+.mission { margin-top: 20px; display: grid; grid-template-columns: 1.6fr 1fr; gap: 16px; }
+.card { background: var(--surface); border: 1px solid var(--line); padding: 16px 18px; min-width: 0; }
+.card h2 { font-family: var(--display); font-weight: 400; font-size: 17px; margin: 0 0 8px; text-transform: uppercase; letter-spacing: .03em; }
+.card h2 .tag { color: var(--red); }
+.consignes { margin: 0; padding-left: 20px; display: grid; gap: 4px; }
+.consignes b { color: var(--red); }
+.eleve label { display: block; font-weight: 600; margin-bottom: 6px; }
+.eleve input { width: 100%; font: inherit; padding: 9px 10px; border: 2px solid var(--line); background: var(--slot); color: var(--ink); }
+.eleve input:focus-visible { outline: 3px solid var(--red); outline-offset: 1px; }
+.eleve p { color: var(--muted); font-size: 13px; margin: 8px 0 0; }
+.intro { margin: 0 0 8px; max-width: 70ch; }
+.intro.muted { color: var(--muted); font-size: 13px; margin: 0; }
+.univ-in { display: block; width: 100%; margin-top: 5px; font: inherit; font-size: 12px; text-align: center; padding: 4px; border: 1px solid #555; background: #222; color: #fff; }
+.univ-in::placeholder { color: #aaa; }
+.univ-in:focus-visible { outline: 2px solid var(--red); }
+.hint.warn { color: var(--red); font-weight: 700; }
+
+.work { margin-top: 16px; display: grid; grid-template-columns: 330px 1fr; gap: 16px; align-items: start; }
+.stock h2 small { font-family: var(--body); text-transform: none; letter-spacing: 0; color: var(--muted); font-size: 13px; }
+.products { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; min-height: 60px; }
+.products.dropzone-active { outline: 3px dashed var(--red); outline-offset: 4px; }
+
+.prod {
+  appearance: none; font: inherit; color: var(--ink); text-align: left; cursor: grab;
+  background: var(--surface); border: 2px solid var(--line); padding: 8px 8px 7px; display: grid; gap: 2px;
+  position: relative; min-width: 0; width: 100%; touch-action: manipulation;
+}
+.prod:hover { border-color: var(--ink); }
+.prod:focus-visible { outline: 3px solid var(--red); outline-offset: 2px; }
+.prod.selected { border-color: var(--red); box-shadow: 0 0 0 3px var(--red-soft); }
+.prod.dragging { opacity: .4; }
+.prod .ico { font-size: 22px; line-height: 1; }
+.prod .nom { font-weight: 700; font-size: 13px; line-height: 1.2; }
+.prod .univ { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+.prod .chiffres { display: flex; gap: 6px; flex-wrap: wrap; font-size: 12px; font-variant-numeric: tabular-nums; }
+.prod .rem { background: var(--black); color: var(--on-dark); font-weight: 700; padding: 0 5px; }
+.prod .stk { color: var(--muted); }
+.prod .flag { font-size: 11px; font-weight: 700; color: var(--red); }
+.prod.bad { border-color: var(--ko); background: var(--ko-soft); }
+
+/* gondole */
+.gondole-card { padding: 16px; }
+.board { overflow-x: auto; }
+.gondole { min-width: 560px; display: grid; grid-template-columns: 110px repeat(3, 1fr); gap: 0; border: 3px solid var(--shelf); background: var(--shelf); }
+.tete { grid-column: 1 / -1; display: grid; grid-template-columns: 110px 1fr; background: var(--red-soft); border-bottom: 3px solid var(--shelf); }
+.lvl { background: var(--surface); padding: 8px; display: flex; flex-direction: column; justify-content: center; border-top: 3px solid var(--shelf); }
+.lvl b { font-size: 13px; }
+.lvl span { font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.tete .lvl { background: var(--red); color: #fff; border-top: 0; }
+.tete .lvl span { color: #ffe0e2; }
+.modhead { background: var(--black); color: var(--on-dark); text-align: center; padding: 7px 6px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; border-left: 3px solid var(--shelf); }
+.modhead small { display: block; font-weight: 400; text-transform: none; letter-spacing: 0; color: #cfc8c6; }
+.corner { background: var(--black); }
+.plv { background: var(--black); color: var(--red); font-family: var(--display); text-align: center; padding: 10px 4px; border-left: 3px solid var(--shelf); border-top: 3px solid var(--shelf); font-size: 15px; letter-spacing: .04em; }
+.slot {
+  appearance: none; font: inherit; color: var(--ink); background: var(--slot); border: 0; border-left: 3px solid var(--shelf); border-top: 3px solid var(--shelf);
+  min-height: 112px; padding: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative;
+}
+.tete .slot { border-top: 0; min-height: 120px; }
+.slot:focus-visible { outline: 3px solid var(--red); outline-offset: -4px; }
+.slot.empty::after { content: "Déposer ici"; color: var(--muted); font-size: 12px; border: 2px dashed var(--line); padding: 14px 10px; width: 100%; text-align: center; }
+.slot.over { background: var(--red-soft); }
+.slot.ready.empty::after { border-color: var(--red); color: var(--red); }
+.slot .prod { cursor: grab; }
+.slot.wrong { box-shadow: inset 0 0 0 4px var(--ko); }
+.slot.right { box-shadow: inset 0 0 0 4px var(--ok); }
+.tete .slot .prod { max-width: 260px; }
+.signature { margin-top: 10px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px; font-size: 13px; color: var(--muted); }
+.signature strong { color: var(--ink); }
+
+.actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+.btn { appearance: none; font: inherit; font-weight: 700; padding: 11px 18px; border: 2px solid var(--black); cursor: pointer; }
+.btn.primary { background: var(--red); border-color: var(--red); color: #fff; }
+.btn.ghost { background: transparent; color: var(--ink); border-color: var(--line); }
+.btn:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+.btn:hover { filter: brightness(1.05); }
+
+.result { margin-top: 14px; border: 2px solid var(--line); background: var(--surface); padding: 14px 16px; }
+.result h3 { margin: 0 0 8px; font-family: var(--display); font-weight: 400; font-size: 18px; }
+.score { font-variant-numeric: tabular-nums; }
+.checks { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.checks li { display: grid; grid-template-columns: 26px 1fr; gap: 6px; align-items: start; }
+.checks .st { font-weight: 700; text-align: center; padding: 1px 0; }
+.checks li.ok .st { background: var(--ok-soft); color: var(--ok); }
+.checks li.ko .st { background: var(--ko-soft); color: var(--ko); }
+.checks .detail { display: block; font-size: 13px; color: var(--muted); }
+.result.win { border-color: var(--ok); background: var(--ok-soft); }
+.win-msg { margin-top: 10px; font-weight: 700; color: var(--ok); }
+.hint { font-size: 13px; color: var(--muted); margin: 10px 0 0; }
+
+@media (max-width: 900px) {
+  .mission, .work { grid-template-columns: 1fr; }
+  .products { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .prod, .slot { transition: border-color .15s, background-color .15s, box-shadow .15s; }
+}
+</style>
+</head>
+<body>
+
+
+<header class="brand">
+  <div class="wrap">
+    <div class="logo">DARTY</div>
+    <h1>Implanter l'espace <span>Black Friday</span></h1>
+    <p>Magasin Darty de Pont-à-Mousson · Pôle merchandising et offre · Mission 2</p>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="mission">
+    <div class="card">
+      <h2><span class="tag">Votre mission</span> · implanter l'espace Black Friday</h2>
+      <p class="intro">Placez les produits de l'offre Black Friday sur l'espace de l'entrée du magasin. Choisissez l'univers de chaque module et le bon niveau pour chaque produit en appliquant les règles d'implantation de la Ressource 13. Tous les produits de la réserve ne font pas partie de l'offre.</p>
+      <p class="intro muted">Glissez un produit sur une case. Sur tablette, touchez un produit puis touchez une case. Pour retirer un produit, remettez-le dans la réserve.</p>
+    </div>
+    <div class="card eleve">
+      <label for="nom">Prénom et nom de l'élève</label>
+      <input id="nom" type="text" autocomplete="off" placeholder="Ex. : Léa MARTIN">
+      <p id="autosave" class="saved">Votre travail est enregistré automatiquement sur cet ordinateur.</p>
+    </div>
+  </section>
+
+  <section class="work">
+    <div class="card stock">
+      <h2>Réserve <small>· 12 produits du catalogue</small></h2>
+      <div class="products" id="reserve" aria-label="Réserve de produits"></div>
+    </div>
+
+    <div class="card gondole-card">
+      <h2>Espace Black Friday · entrée du magasin</h2>
+      <div class="board">
+        <div class="gondole" id="gondole">
+          <div class="tete">
+            <div class="lvl"><b>Tête de gondole</b><span>Bout d'allée</span></div>
+            <button class="slot empty" data-slot="tete" aria-label="Tête de gondole"></button>
+          </div>
+          <div class="corner"></div>
+          <div class="modhead">Module A<input class="univ-in" id="univ-A" type="text" autocomplete="off" placeholder="Univers ?" aria-label="Univers du module A"></div>
+          <div class="modhead">Module B<input class="univ-in" id="univ-B" type="text" autocomplete="off" placeholder="Univers ?" aria-label="Univers du module B"></div>
+          <div class="modhead">Module C<input class="univ-in" id="univ-C" type="text" autocomplete="off" placeholder="Univers ?" aria-label="Univers du module C"></div>
+
+          <div class="lvl"><b>Chapeau</b><span>&gt; 1,80 m</span></div>
+          <div class="plv">BLACK FRIDAY</div>
+          <div class="plv">BLACK FRIDAY</div>
+          <div class="plv">BLACK FRIDAY</div>
+
+          <div class="lvl"><b>Yeux</b><span>1,20 – 1,80 m</span></div>
+          <button class="slot empty" data-slot="A-yeux" aria-label="Module A, niveau des yeux"></button>
+          <button class="slot empty" data-slot="B-yeux" aria-label="Module B, niveau des yeux"></button>
+          <button class="slot empty" data-slot="C-yeux" aria-label="Module C, niveau des yeux"></button>
+
+          <div class="lvl"><b>Mains</b><span>0,80 – 1,20 m</span></div>
+          <button class="slot empty" data-slot="A-mains" aria-label="Module A, niveau des mains"></button>
+          <button class="slot empty" data-slot="B-mains" aria-label="Module B, niveau des mains"></button>
+          <button class="slot empty" data-slot="C-mains" aria-label="Module C, niveau des mains"></button>
+
+          <div class="lvl"><b>Sol</b><span>&lt; 0,80 m</span></div>
+          <button class="slot empty" data-slot="A-sol" aria-label="Module A, niveau du sol"></button>
+          <button class="slot empty" data-slot="B-sol" aria-label="Module B, niveau du sol"></button>
+          <button class="slot empty" data-slot="C-sol" aria-label="Module C, niveau du sol"></button>
+        </div>
+      </div>
+      <div class="signature"><span>Implantation réalisée par : <strong id="sig">…</strong></span><span id="date"></span></div>
+
+      <div class="actions">
+        <button class="btn primary" id="save">Enregistrer mon travail (fichier)</button>
+        <button class="btn ghost" id="open">Ouvrir un travail enregistré</button>
+        <input type="file" id="file" accept=".json,application/json" hidden>
+        <button class="btn ghost" id="reset">Tout effacer</button>
+      </div>
+      <p class="hint" id="msg" aria-live="polite">Quand votre espace est terminé, faites une capture d'écran et collez-la dans votre document Word.</p>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  var P = [
+    { id: "D001", nom: "TV 55\" 4K UHD Smart TV", ico: "📺", univ: "Image & Son", rem: 20, stock: 14 },
+    { id: "D002", nom: "Casque Bluetooth à réduction de bruit", ico: "🎧", univ: "Image & Son", rem: 25, stock: 25 },
+    { id: "D003", nom: "Aspirateur balai sans fil", ico: "🧹", univ: "Électroménager", rem: 30, stock: 16 },
+    { id: "D004", nom: "Micro-ondes 25 L", ico: "♨️", univ: "Cuisine", rem: 15, stock: 22 },
+    { id: "D005", nom: "Écouteurs sans fil", ico: "🎵", univ: "Image & Son", rem: 20, stock: 18 },
+    { id: "D006", nom: "Lave-linge 9 kg", ico: "🫧", univ: "Électroménager", rem: 10, stock: 8 },
+    { id: "D007", nom: "Tablette 11\" 128 Go", ico: "📱", univ: "Multimédia", rem: 20, stock: 12 },
+    { id: "D008", nom: "Barre de son", ico: "🔊", univ: "Image & Son", rem: 40, stock: 6 },
+    { id: "D009", nom: "Robot cuiseur multifonction", ico: "🍲", univ: "Cuisine", rem: 25, stock: 4 },
+    { id: "D010", nom: "Machine à café expresso broyeur", ico: "☕", univ: "Cuisine", rem: 35, stock: 12 },
+    { id: "D011", nom: "Montre connectée", ico: "⌚", univ: "Multimédia", rem: 30, stock: 15 },
+    { id: "D012", nom: "Ordinateur portable 15\"", ico: "💻", univ: "Multimédia", rem: 10, stock: 20 }
+  ];
+  var KEY = "darty-mission8-gondole";
+  var reserve = document.getElementById("reserve");
+  var slots = Array.prototype.slice.call(document.querySelectorAll(".slot"));
+  var nom = document.getElementById("nom"), sig = document.getElementById("sig");
+  var msg = document.getElementById("msg");
+  var selected = null;
+
+  function card(p) {
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "prod"; b.draggable = true; b.dataset.id = p.id;
+    b.setAttribute("aria-label", p.nom + ", remise " + p.rem + " %, stock " + p.stock);
+    b.innerHTML = '<span class="ico" aria-hidden="true">' + p.ico + '</span>' +
+      '<span class="nom">' + p.nom + '</span>' +
+      '<span class="univ">' + p.univ + ' · ' + p.id + '</span>' +
+      '<span class="chiffres"><span class="rem">−' + p.rem + ' %</span><span class="stk">stock ' + p.stock + '</span></span>';
+    b.addEventListener("dragstart", function (e) { e.dataTransfer.setData("text/plain", p.id); b.classList.add("dragging"); });
+    b.addEventListener("dragend", function () { b.classList.remove("dragging"); });
+    b.addEventListener("click", function (e) {
+      e.stopPropagation();
+      if (selected === b) { unselect(); return; }
+      unselect(); selected = b; b.classList.add("selected");
+      slots.forEach(function (s) { s.classList.add("ready"); });
+    });
+    return b;
+  }
+  function unselect() {
+    if (selected) selected.classList.remove("selected");
+    selected = null; slots.forEach(function (s) { s.classList.remove("ready"); });
+  }
+  function refresh() { slots.forEach(function (s) { s.classList.toggle("empty", !s.querySelector(".prod")); }); }
+  function sortReserve() {
+    Array.prototype.slice.call(reserve.querySelectorAll(".prod"))
+      .sort(function (a, b) { return a.dataset.id < b.dataset.id ? -1 : 1; })
+      .forEach(function (c) { reserve.appendChild(c); });
+  }
+  function cardOf(id) { return document.querySelector('.prod[data-id="' + id + '"]'); }
+  function place(id, slot) {
+    var c = cardOf(id); if (!c) return;
+    var existing = slot.querySelector(".prod"), from = c.parentElement;
+    if (existing && existing !== c) {
+      if (from && from.classList.contains("slot")) from.appendChild(existing); else reserve.appendChild(existing);
+    }
+    slot.appendChild(c); after();
+  }
+  function toReserve(id) { var c = cardOf(id); if (c) { reserve.appendChild(c); after(); } }
+  function after() { unselect(); refresh(); sortReserve(); autosave(); resetArm(false); }
+
+  slots.forEach(function (s) {
+    s.addEventListener("dragover", function (e) { e.preventDefault(); s.classList.add("over"); });
+    s.addEventListener("dragleave", function () { s.classList.remove("over"); });
+    s.addEventListener("drop", function (e) { e.preventDefault(); s.classList.remove("over"); place(e.dataTransfer.getData("text/plain"), s); });
+    s.addEventListener("click", function () { if (selected) place(selected.dataset.id, s); });
+  });
+  reserve.addEventListener("dragover", function (e) { e.preventDefault(); reserve.classList.add("dropzone-active"); });
+  reserve.addEventListener("dragleave", function () { reserve.classList.remove("dropzone-active"); });
+  reserve.addEventListener("drop", function (e) { e.preventDefault(); reserve.classList.remove("dropzone-active"); toReserve(e.dataTransfer.getData("text/plain")); });
+  document.querySelector(".stock").addEventListener("click", function () {
+    if (selected && selected.parentElement.classList.contains("slot")) toReserve(selected.dataset.id);
+  });
+
+  // ---------- état du travail
+  function state() {
+    var pl = {};
+    slots.forEach(function (s) { var c = s.querySelector(".prod"); if (c) pl[s.dataset.slot] = c.dataset.id; });
+    return {
+      app: "darty-mission8", version: 1, nom: nom.value, date: new Date().toISOString(),
+      univers: { A: val("A"), B: val("B"), C: val("C") }, placements: pl
+    };
+  }
+  function val(L) { return document.getElementById("univ-" + L).value; }
+  function apply(st) {
+    document.querySelectorAll(".prod").forEach(function (c) { reserve.appendChild(c); });
+    nom.value = st.nom || ""; sig.textContent = nom.value.trim() || "…";
+    ["A", "B", "C"].forEach(function (L) { document.getElementById("univ-" + L).value = (st.univers && st.univers[L]) || ""; });
+    var pl = st.placements || {};
+    Object.keys(pl).forEach(function (k) {
+      var s = document.querySelector('.slot[data-slot="' + k + '"]'), c = cardOf(pl[k]);
+      if (s && c) s.appendChild(c);
+    });
+    unselect(); refresh(); sortReserve();
+  }
+  function autosave() {
+    try { localStorage.setItem(KEY, JSON.stringify(state())); } catch (e) {}
+  }
+
+  document.getElementById("save").addEventListener("click", function () {
+    var st = state();
+    var name = (st.nom.trim() || "eleve").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^A-Za-z0-9]+/g, "_");
+    try {
+      var blob = new Blob([JSON.stringify(st, null, 2)], { type: "application/json" });
+      var a = document.createElement("a");
+      a.href = URL.createObjectURL(blob); a.download = "espace_darty_" + name + ".json";
+      a.style.display = "none"; document.body.appendChild(a); a.click();
+      setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 4000);
+      say("Fichier « espace_darty_" + name + ".json » enregistré dans vos Téléchargements. Rangez-le dans votre dossier personnel.");
+    } catch (e) { say("L'enregistrement du fichier n'a pas fonctionné sur cet appareil. Votre travail reste enregistré sur cet ordinateur.", true); }
+  });
+  var fileIn = document.getElementById("file");
+  document.getElementById("open").addEventListener("click", function () { fileIn.value = ""; fileIn.click(); });
+  fileIn.addEventListener("change", function () {
+    var f = fileIn.files && fileIn.files[0]; if (!f) return;
+    var r = new FileReader();
+    r.onload = function () {
+      try {
+        var st = JSON.parse(r.result);
+        if (st.app !== "darty-mission8") throw new Error();
+        apply(st); autosave(); say("Travail ouvert : vous pouvez continuer.");
+      } catch (e) { say("Ce fichier n'est pas un travail de la mission 2 du pôle merchandising. Choisissez le fichier « espace_darty_… .json ».", true); }
+    };
+    r.readAsText(f);
+  });
+
+  var armed = false, resetBtn = document.getElementById("reset");
+  function resetArm(on) { armed = on; resetBtn.textContent = on ? "Confirmer : tout effacer ?" : "Tout effacer"; }
+  resetBtn.addEventListener("click", function () {
+    if (!armed) { resetArm(true); return; }
+    apply({ nom: nom.value, univers: {}, placements: {} }); autosave(); resetArm(false);
+    say("L'espace a été vidé.");
+  });
+
+  function say(t, warn) { msg.textContent = t; msg.classList.toggle("warn", !!warn); }
+
+  nom.addEventListener("input", function () { sig.textContent = nom.value.trim() || "…"; autosave(); });
+  ["A", "B", "C"].forEach(function (L) { document.getElementById("univ-" + L).addEventListener("input", autosave); });
+  document.getElementById("date").textContent = "le " + new Date().toLocaleDateString("fr-FR");
+
+  P.forEach(function (p) { reserve.appendChild(card(p)); });
+  try { var saved = JSON.parse(localStorage.getItem(KEY) || "null"); if (saved) { apply(saved); say("Votre travail précédent a été retrouvé sur cet ordinateur."); } } catch (e) {}
+})();
+</script>
+<style>.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}</style>
+
+</body>
+</html>
